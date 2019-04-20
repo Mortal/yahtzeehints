@@ -35,8 +35,7 @@ class MainForm(forms.Form):
             i *= 2
         if state_dict:
             raise forms.ValidationError("Unknown keys: %r" % sorted(state_dict))
-        state += i * side_sum
-        print("State is %08x", state)
+        state += i * min(side_sum, 84)
         return state
 
     def clean_roll_count(self):
@@ -61,8 +60,10 @@ class Main(View):
         roll = form.cleaned_data["roll"]
         roll_count = form.cleaned_data["roll_count"]
         if roll_count == 1:
-            return JsonResponse({"keep_first": request.yahtzeevalue.keep_first(state, roll)})
+            response = JsonResponse({"keep_first": request.yahtzeevalue.keep_first(state, roll)})
         elif roll_count == 2:
-            return JsonResponse({"keep_second": request.yahtzeevalue.keep_second(state, roll)})
+            response = JsonResponse({"keep_second": request.yahtzeevalue.keep_second(state, roll)})
         else:
-            return JsonResponse({"best_action": KEYS[request.yahtzeevalue.best_action(state, roll)]})
+            response = JsonResponse({"best_action": KEYS[request.yahtzeevalue.best_action(state, roll)]})
+        response["Access-Control-Allow-Origin"] = "*"
+        return response
