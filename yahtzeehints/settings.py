@@ -117,4 +117,4 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-YAHTZEE_PATH = "../yahtzeevalue/rust/state_value.bin"
+YAHTZEE_PATH = os.environ["YAHTZEE_PATH"]
