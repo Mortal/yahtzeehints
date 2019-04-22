@@ -1,0 +1,13 @@
+[Unit]
+Description=yatzy.strova.dk Daphne server
+After=network.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/yatzy.strova.dk/yahtzeehints
+EnvironmentFile=/var/www/yatzy.strova.dk/yahtzeehints/env.txt
+ExecStart=/var/www/yatzy.strova.dk/yahtzeehints/.venv/bin/daphne -b 127.0.0.1 -p 8001 lunchclub.asgi:channel_layer
+
+[Install]
+WantedBy=multi-user.target

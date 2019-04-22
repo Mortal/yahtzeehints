@@ -1,11 +1,24 @@
 import json
+
 from django.views.generic import View
 from django.http import JsonResponse
 from django import forms
+from django.conf import settings
+
 import yahtzeevalue
 
 
 KEYS = "PDTVQWsSCH?!123456"
+
+
+def get_database():
+    try:
+        return get_database.db
+    except AttributeError:
+        pass
+    get_database.db_wrapper = yahtzeevalue.Database(settings.YAHTZEE_PATH)
+    get_database.db = get_database.db_wrapper.__enter__()
+    return get_database.db
 
 
 class HintForm(forms.Form):
@@ -60,10 +73,10 @@ class Hint(View):
         roll = form.cleaned_data["roll"]
         roll_count = form.cleaned_data["roll_count"]
         if roll_count == 1:
-            response = JsonResponse({"keep_first": request.yahtzeevalue.keep_first(state, roll)})
+            response = JsonResponse({"keep_first": get_database().keep_first(state, roll)})
         elif roll_count == 2:
-            response = JsonResponse({"keep_second": request.yahtzeevalue.keep_second(state, roll)})
+            response = JsonResponse({"keep_second": get_database().keep_second(state, roll)})
         else:
-            response = JsonResponse({"best_action": KEYS[request.yahtzeevalue.best_action(state, roll)]})
+            response = JsonResponse({"best_action": KEYS[get_database().best_action(state, roll)]})
         response["Access-Control-Allow-Origin"] = "*"
         return response
