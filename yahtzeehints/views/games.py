@@ -14,7 +14,6 @@ games = {}
 
 class GameList(View):
     def get(self, request):
-        print(games)
         game_list = [
             {"id": key, "name": game["name"]} for key, game in games.items()
         ]
@@ -23,7 +22,6 @@ class GameList(View):
 
 class GameCreate(View):
     def post(self, request):
-        print(games)
         key = "game%s" % len(games)
         game = games[key] = {"name": "%s" % timezone.now(), "patches": []}
         return JsonResponse({"game": {"id": key, "name": game["name"]}})
@@ -59,8 +57,6 @@ class WaitForm(forms.Form):
         try:
             return games[game_id]
         except KeyError:
-            print(games)
-            print(repr(game_id))
             raise forms.ValidationError("Unknown game id")
 
 
@@ -74,8 +70,6 @@ class PatchForm(forms.Form):
         try:
             return games[game_id]
         except KeyError:
-            print(games)
-            print(repr(game_id))
             raise forms.ValidationError("Unknown game id")
 
     def clean_patches(self):
@@ -94,20 +88,17 @@ SLEEP_SECONDS = 0.2
 
 class Wait(AsyncHttpConsumer):
     async def handle(self, body):
-        print("Wait")
         headers = [
             (b"Content-Type", b"application/json; charset=utf-8"),
         ]
         try:
             data = json.loads(body.decode("utf-8"))
         except (UnicodeDecodeError, ValueError) as e:
-            print("wait: Bad data", e, repr(body))
             await self.send_response(200, json.dumps({"error": "Could not read body as UTF-8 JSON"}).encode("utf-8"), headers=headers)
             return
         try:
             form = WaitForm(data=data)
             if not form.is_valid():
-                print("wait: Form errors", form.errors)
                 await self.send_response(200, json.dumps({"errors": form.errors}).encode("utf-8"), headers=headers)
                 return
             await self.send_headers(headers=headers)
@@ -115,14 +106,11 @@ class Wait(AsyncHttpConsumer):
 
             game = form.cleaned_data["game"]["patches"]
             version = form.cleaned_data["version"]
-            if len(game) == version:
-                print("wait: Nothing new %s" % version)
             for i in range(round(MAX_WAIT_SECONDS / SLEEP_SECONDS)):
                 if len(game) != version:
                     break
                 await asyncio.sleep(SLEEP_SECONDS)
             patches = [p for v in game[version:] for p in v]
-            print("wait: send %s patches" % len(patches))
             await self.send_body(json.dumps({"version": len(game), "patches": patches}).encode("utf-8"))
         except Exception as e:
             print("Wait: Error in processing", e)
