@@ -8,7 +8,7 @@ import yahtzeevalue
 KEYS = "PDTVQWsSCH?!123456"
 
 
-class MainForm(forms.Form):
+class HintForm(forms.Form):
     state = forms.CharField()
     roll_count = forms.IntegerField()
     roll = forms.CharField()
@@ -51,9 +51,9 @@ class MainForm(forms.Form):
         return [int(v) for v in roll]
 
 
-class Main(View):
+class Hint(View):
     def get(self, request):
-        form = MainForm(data=request.GET)
+        form = HintForm(data=request.GET)
         if form.errors:
             return JsonResponse({"errors": form.errors})
         state = form.cleaned_data["state"]
