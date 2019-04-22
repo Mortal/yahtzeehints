@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'yahtzeehints',
 ]
 
 MIDDLEWARE = [
@@ -118,3 +119,5 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 YAHTZEE_PATH = os.environ["YAHTZEE_PATH"]
+
+STATIC_ROOT = os.path.join(BASE_DIR, "static")
